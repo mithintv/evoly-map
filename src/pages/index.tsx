@@ -23,6 +23,15 @@ export default function Home() {
     });
   });
 
+  useEffect(() => {
+    if (!map.current) return; // wait for map to initialize
+    map.current.on("move", () => {
+      setLng(parseInt(map.current!.getCenter().lng.toFixed(4)));
+      setLat(parseInt(map.current!.getCenter().lat.toFixed(4)));
+      setZoom(parseInt(map.current!.getZoom().toFixed(2)));
+    });
+  });
+
   return (
     <>
       <Head>
@@ -33,6 +42,9 @@ export default function Home() {
       </Head>
       <main className={styles.main}>
         <div>
+          <div className="sidebar">
+            Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+          </div>
           <div ref={mapContainer} className="map-container" />
         </div>
       </main>
