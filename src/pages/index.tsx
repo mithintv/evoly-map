@@ -1,6 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
 import { useState, useEffect, useRef } from "react";
 import styles from "@/styles/Home.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -8,14 +6,12 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
-const inter = Inter({ subsets: ["latin"] });
-
 export default function Home() {
   const mapContainer = useRef(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [lng, setLng] = useState(-70.9);
-  const [lat, setLat] = useState(42.35);
-  const [zoom, setZoom] = useState(9);
+  const [lng, setLng] = useState(-95.665);
+  const [lat, setLat] = useState(37.6);
+  const [zoom, setZoom] = useState(3);
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
