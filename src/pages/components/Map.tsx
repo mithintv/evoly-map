@@ -24,7 +24,7 @@ export default function Map() {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: "mapbox://styles/mapbox/light-v10",
       center: [lng, lat],
       zoom: zoom,
     });
@@ -145,12 +145,6 @@ export default function Map() {
           new mapboxgl.Popup().setLngLat(coordinates).addTo(map.current!);
         });
 
-        map.current!.on("mouseenter", "points", () => {
-          map.current!.getCanvas().style.cursor = "pointer";
-        });
-        map.current!.on("mouseleave", "points", () => {
-          map.current!.getCanvas().style.cursor = "";
-        });
         map.current!.on("mouseenter", "clusters", () => {
           map.current!.getCanvas().style.cursor = "pointer";
         });
