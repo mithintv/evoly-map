@@ -1,3 +1,4 @@
+import { createRoot } from "react-dom/client";
 import { useState, useEffect, useRef } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
@@ -16,35 +17,25 @@ import random from "../../seeds/random1000.json";
 export default function Map() {
   const mapContainer = useRef(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const popUpRef = useRef(new mapboxgl.Popup({ offset: 15 }));
   const [lng, setLng] = useState(-95.665);
   const [lat, setLat] = useState(37.6);
   const [zoom, setZoom] = useState(3);
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
+    if (map.current) return;
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/light-v10",
       center: [lng, lat],
       zoom: zoom,
     });
-  });
-
-  useEffect(() => {
-    if (!map.current) return; // wait for map to initialize
-    map.current.on("move", () => {
+    map.current!.on("move", () => {
       setLng(parseInt(map.current!.getCenter().lng.toFixed(4)));
       setLat(parseInt(map.current!.getCenter().lat.toFixed(4)));
       setZoom(parseInt(map.current!.getZoom().toFixed(2)));
     });
-  });
 
-  useEffect(() => {
-    // if (map.current) return; // initialize map only once
-    map.current!.on("error", (e) => {
-      // Hide those annoying non-error errors
-      console.error(e);
-    });
     map.current!.on("load", () => {
       if (!map.current!.getSource("earthquakes")) {
         map.current!.addSource("earthquakes", {
@@ -132,23 +123,13 @@ export default function Map() {
             });
         });
 
-        map.current!.on("click", "unclustered-point", (e) => {
-          const coordinates = e.features![0].geometry.coordinates.slice();
+        map.current!.on("click", "unclustered-point", (e) => {});
 
-          // Ensure that if the map is zoomed out such that
-          // multiple copies of the feature are visible, the
-          // popup appears over the copy being pointed to.
-          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-          }
-
-          new mapboxgl.Popup().setLngLat(coordinates).addTo(map.current!);
-        });
-
-        map.current!.on("mouseenter", "clusters", () => {
+        // Pointer changes on mouseenter/mouseleave for clusters and unclustered points
+        map.current!.on("mouseenter", ["clusters", "unclustered-point"], () => {
           map.current!.getCanvas().style.cursor = "pointer";
         });
-        map.current!.on("mouseleave", "clusters", () => {
+        map.current!.on("mouseleave", ["clusters", "unclustered-point"], () => {
           map.current!.getCanvas().style.cursor = "";
         });
       }
