@@ -1,8 +1,26 @@
+import { useState } from "react";
 import Head from "next/head";
-import Map from "./components/Map";
+import Map from "../components/Map";
+import Button from "@/components/Button";
 import styles from "@/styles/Home.module.css";
+import type { GeoJSON, FeatureCollection } from "geojson";
+
+// import earthquakes from "../../seeds/earthquakes.json";
+import random from "../seeds/random10000.json";
 
 export default function Home() {
+  const [data, setData] = useState({ features: random.features, size: 10 });
+  const buttons = ["10", "100", "1,000", "10,000"];
+
+  const setLengthHandler = (button: string) => {
+    setData((prevState) => {
+      return {
+        ...prevState,
+        size: parseInt(button.replaceAll(",", "")),
+      };
+    });
+  };
+
   return (
     <>
       <Head>
@@ -12,7 +30,18 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <Map />
+        <Map features={data.features} size={data.size} />
+        <div>
+          {buttons.map((button, index) => {
+            return (
+              <Button
+                key={index}
+                onClick={setLengthHandler}
+                name={button}
+              ></Button>
+            );
+          })}
+        </div>
       </main>
     </>
   );

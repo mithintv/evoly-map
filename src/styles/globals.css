@@ -101,6 +101,7 @@ a {
 }
 
 .map-container {
+  color: black;
   width: 600px;
   height: 400px;
 }

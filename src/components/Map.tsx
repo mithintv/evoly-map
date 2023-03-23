@@ -1,41 +1,48 @@
-import { createRoot } from "react-dom/client";
 import { useState, useEffect, useRef } from "react";
+import { GeoJSON, FeatureCollection, Feature } from "geojson";
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
-// import earthquakes from "../../seeds/earthquakes.json";
-import random from "../../seeds/random1000.json";
-
 // const RandomGenerator = require("random-points-generator");
-// const points = RandomGenerator.random(1000, {
-//   //   bbox: [-118.2, 34.3, -67.03, 44.76],
+// const points = RandomGenerator.random(10000, {
+//   bbox: [-180, -80, 180, 80],
 // });
 // console.log(JSON.stringify(points));
 
-export default function Map() {
+export default function Map({
+  features,
+  size,
+}: {
+  features: Feature[];
+  size: number;
+}) {
   const mapContainer = useRef(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const popUpRef = useRef(new mapboxgl.Popup({ offset: 15 }));
-  const [lng, setLng] = useState(-95.665);
-  const [lat, setLat] = useState(37.6);
-  const [zoom, setZoom] = useState(3);
+  const [lng, setLng] = useState(-17.48);
+  const [lat, setLat] = useState(20.63);
+  const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
-    if (map.current) return;
+    // if (map.current) return; // prevents re-render of map
+
+    // Initializes map
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/light-v10",
       center: [lng, lat],
       zoom: zoom,
     });
+
+    // Outputs and updates center coordinates of map container area based on user interaction
     map.current!.on("move", () => {
-      setLng(parseInt(map.current!.getCenter().lng.toFixed(4)));
-      setLat(parseInt(map.current!.getCenter().lat.toFixed(4)));
-      setZoom(parseInt(map.current!.getZoom().toFixed(2)));
+      setLng(parseFloat(map.current!.getCenter().lng.toFixed(2)));
+      setLat(parseFloat(map.current!.getCenter().lat.toFixed(2)));
+      setZoom(parseFloat(map.current!.getZoom().toFixed(2)));
     });
 
+    // Custom map configuration for clusters, points, and popups
     map.current!.on("load", () => {
       if (!map.current!.getSource("earthquakes")) {
         map.current!.addSource("earthquakes", {
@@ -43,12 +50,19 @@ export default function Map() {
           // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
           // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
           //   data: "https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson",
-          data: random,
+          data: {
+            type: "FeatureCollection",
+            features: features.slice(0, size),
+          },
           cluster: true,
           clusterMaxZoom: 14, // Max zoom to cluster points on
           clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50)
         });
 
+        // Add zoom and rotation controls to the map.
+        map.current!.addControl(new mapboxgl.NavigationControl());
+
+        // layer to group unclustered points into clusters
         map.current!.addLayer({
           id: "clusters",
           type: "circle",
@@ -64,23 +78,28 @@ export default function Map() {
               "step",
               ["get", "point_count"],
               "#51bbd6",
+              10,
+              "#8AD369",
               100,
               "#f1f075",
-              750,
+              500,
               "#f28cb1",
             ],
             "circle-radius": [
               "step",
               ["get", "point_count"],
+              15,
+              10,
               20,
               100,
               30,
-              750,
+              500,
               40,
             ],
           },
         });
 
+        // Layer to label size of clusters
         map.current!.addLayer({
           id: "cluster-count",
           type: "symbol",
@@ -93,6 +112,7 @@ export default function Map() {
           },
         });
 
+        // Layer to distinguish individual unclustered points
         map.current!.addLayer({
           id: "unclustered-point",
           type: "circle",
@@ -123,7 +143,25 @@ export default function Map() {
             });
         });
 
-        map.current!.on("click", "unclustered-point", (e) => {});
+        map.current!.on("click", "unclustered-point", (e) => {
+          const coordinates = e.features![0].geometry.coordinates.slice();
+
+          // Ensure that if the map is zoomed out such that
+          // multiple copies of the feature are visible, the
+          // popup appears over the copy being pointed to.
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
+
+          new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(
+              `<b>Coordinates</b><br>Longitude: ${coordinates[0].toFixed(
+                2
+              )}<br>Latitude: ${coordinates[1].toFixed(2)}`
+            )
+            .addTo(map.current!);
+        });
 
         // Pointer changes on mouseenter/mouseleave for clusters and unclustered points
         map.current!.on("mouseenter", ["clusters", "unclustered-point"], () => {
@@ -134,7 +172,7 @@ export default function Map() {
         });
       }
     });
-  });
+  }, [size, features]);
 
   return (
     <div>
