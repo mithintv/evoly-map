@@ -1,43 +1,30 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import * as dynamoose from "dynamoose";
+import { dynamoInstance, Coordinate } from "../../lib/schema";
 import * as uuid from "uuid";
-
 import data from "../../seeds/random10000.json";
 
-const client = new DynamoDBClient({});
+// Set DynamoDB instance to the Dynamoose DDB instance
+dynamoose.aws.ddb.set(dynamoInstance);
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    for (let i = 0; i < 5; i++) {
-      let coords = data.features[i].geometry.coordinates;
-      let params = {
-        TableName: "evoly-coords",
-        /* Item properties will depend on your application concerns */
-        Item: {
-          id: {
-            S: uuid.v4(),
-          },
-          type: {
-            S: "Feature",
-          },
-          geometry: {
-            M: {
-              type: {
-                S: "Point",
-              },
-              coordinates: {
-                NS: [coords[0].toString(), coords[1].toString()],
-              },
-            },
-          },
+    for (let i = 0; i < 1; i++) {
+      let coord = new Coordinate({
+        id: uuid.v4(),
+        type: data.features[i].type,
+        properties: data.features[i].properties,
+        geometry: {
+          type: data.features[i].geometry.type,
+          coordinates: [...data.features[i].geometry.coordinates],
         },
-      };
-      const response = await client.send(new PutItemCommand(params));
-      console.log(response);
+      });
+      await coord.save();
+      console.log("Save operation was successful.");
     }
     res.send("Done seeding!");
   } catch (err) {

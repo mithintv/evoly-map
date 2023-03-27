@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Map from "../components/Map";
 import Button from "@/components/Button";
 import styles from "@/styles/Home.module.css";
-import type { GeoJSON, FeatureCollection } from "geojson";
+
+import * as dynamoose from "dynamoose";
+import { dynamoInstance, Coordinate } from "../lib/schema";
 
 // import earthquakes from "../../seeds/earthquakes.json";
 import random from "../seeds/random10000.json";
 
-export default function Home() {
-  const [data, setData] = useState({ features: random.features, size: 10 });
+export default function Home({ features }: any) {
+  const [data, setData] = useState({ features, size: 10 });
   const buttons = ["10", "100", "1,000", "10,000"];
 
   const setLengthHandler = (button: string) => {
@@ -45,4 +47,16 @@ export default function Home() {
       </main>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  // Set DynamoDB instance to the Dynamoose DDB instance
+  dynamoose.aws.ddb.set(dynamoInstance);
+  const results = await Coordinate.scan().exec();
+  const features = await JSON.stringify(results);
+  const parsed = JSON.parse(features);
+  console.log(parsed);
+  return {
+    props: { features: parsed }, // will be passed to the page component as props
+  };
 }

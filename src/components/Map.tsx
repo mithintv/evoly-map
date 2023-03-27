@@ -25,6 +25,7 @@ export default function Map({
   const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
+    console.log(features, size);
     // if (map.current) return; // prevents re-render of map
 
     // Initializes map
