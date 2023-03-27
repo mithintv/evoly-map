@@ -11,8 +11,11 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const results = await Coordinate.scan().exec();
-    console.log(results);
+    const t1 = performance.now();
+    const results = await Coordinate.scan().limit(10).exec();
+    console.log(results.count, results.scannedCount);
+    const t2 = performance.now();
+    console.log(t2 - t1);
     res.send(results);
   } catch (err) {
     console.error(err);

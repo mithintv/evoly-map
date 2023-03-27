@@ -11,7 +11,7 @@ import { dynamoInstance, Coordinate } from "../lib/schema";
 import random from "../seeds/random10000.json";
 
 export default function Home({ features }: any) {
-  const [data, setData] = useState({ features, size: 10 });
+  const [data, setData] = useState({ features, size: 1 });
   const buttons = ["10", "100", "1,000", "10,000"];
 
   const setLengthHandler = (button: string) => {
@@ -52,10 +52,10 @@ export default function Home({ features }: any) {
 export async function getServerSideProps() {
   // Set DynamoDB instance to the Dynamoose DDB instance
   dynamoose.aws.ddb.set(dynamoInstance);
-  const results = await Coordinate.scan().exec();
+  const results = await Coordinate.scan().limit(10);
   const features = await JSON.stringify(results);
   const parsed = JSON.parse(features);
-  console.log(parsed);
+  console.log("Fetched data!");
   return {
     props: { features: parsed }, // will be passed to the page component as props
   };
