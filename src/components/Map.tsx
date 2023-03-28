@@ -5,13 +5,7 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
-export default function Map({
-  features,
-  size,
-}: {
-  features: Feature[];
-  size: number;
-}) {
+export default function Map({ features }: { features: Feature[] }) {
   const mapContainer = useRef(null);
   const [map, setMap] = useState<any>(null);
   const [lng, setLng] = useState(-17.48);
@@ -19,6 +13,7 @@ export default function Map({
   const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
+    console.log("running again!");
     // Initializes map
     const map = new mapboxgl.Map({
       container: mapContainer.current!,
