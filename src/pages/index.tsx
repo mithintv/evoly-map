@@ -1,26 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, CSSProperties } from "react";
 import Head from "next/head";
 import Map from "../components/Map";
 import Button from "@/components/Button";
 import styles from "@/styles/Home.module.css";
 
-import * as dynamoose from "dynamoose";
-import { dynamoInstance, Coordinate } from "../lib/schema";
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 // import earthquakes from "../../seeds/earthquakes.json";
-import random from "../seeds/random10000.json";
+// import random from "../seeds/random10000.json";
 
 export default function Home({ features }: any) {
-  const [data, setData] = useState({ features, size: 1 });
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(features);
+  const [limit, setLimit] = useState(1);
   const buttons = ["10", "100", "1,000", "10,000"];
 
   const setLengthHandler = (button: string) => {
-    setData((prevState) => {
-      return {
-        ...prevState,
-        size: parseInt(button.replaceAll(",", "")),
-      };
-    });
+    setLoading(true);
+    setLimit(parseInt(button.replaceAll(",", "")));
+  };
+
+  useEffect(() => {
+    (async function fetchData() {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API}api/scan?limit=${limit}`
+      );
+      console.log(response);
+      // const stringified = await JSON.stringify(response);
+      // console.log(stringified);
+      const parsed = await response.json();
+      console.log(parsed);
+      setData(parsed);
+      setLoading(false);
+    })();
+  }, [limit]);
+
+  const override: CSSProperties = {
+    position: "absolute",
+    left: "50%",
+    zIndex: "2",
+    margin: "0 auto",
   };
 
   return (
@@ -32,7 +51,14 @@ export default function Home({ features }: any) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <Map features={data.features} size={data.size} />
+        <div className={styles.container}>
+          <ScaleLoader
+            loading={loading}
+            cssOverride={override}
+            color="#27272B"
+          />
+          <Map features={data} size={limit} />
+        </div>
         <div>
           {buttons.map((button, index) => {
             return (
@@ -49,14 +75,17 @@ export default function Home({ features }: any) {
   );
 }
 
-export async function getServerSideProps() {
-  // Set DynamoDB instance to the Dynamoose DDB instance
-  dynamoose.aws.ddb.set(dynamoInstance);
-  const results = await Coordinate.scan().limit(10);
-  const features = await JSON.stringify(results);
-  const parsed = JSON.parse(features);
-  console.log("Fetched data!");
-  return {
-    props: { features: parsed }, // will be passed to the page component as props
-  };
-}
+// export async function getStaticProps() {
+//   // Set DynamoDB instance to the Dynamoose DDB instance
+//   dynamoose.aws.ddb.set(dynamoInstance);
+//   const results = await Coordinate.scan()
+//     .attributes(["type", "geometry"])
+//     .limit(1)
+//     .exec();
+//   const features = await JSON.stringify(results);
+//   const parsed = JSON.parse(features);
+//   console.log("Fetched data!");
+//   return {
+//     props: { features: parsed }, // will be passed to the page component as props
+//   };
+// }
