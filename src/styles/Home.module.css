@@ -12,8 +12,12 @@
   align-items: center;
 }
 
-.loading {
+.loader {
+  position: absolute;
   display: flex;
   align-items: center;
-  background-color: black;
+  width: 600px;
+  height: 400px;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.25);
 }

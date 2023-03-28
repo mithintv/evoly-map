@@ -13,7 +13,7 @@ import ScaleLoader from "react-spinners/ScaleLoader";
 // import random from "../seeds/random10000.json";
 
 export default function Home({ features }: any) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState(features);
   const [limit, setLimit] = useState(1);
   const buttons = ["10", "100", "1,000", "10,000"];
@@ -25,6 +25,7 @@ export default function Home({ features }: any) {
 
   useEffect(() => {
     if (limit > data.length) {
+      const t1 = performance.now();
       console.log("fetching");
       (async function () {
         const response = await fetch(
@@ -35,8 +36,10 @@ export default function Home({ features }: any) {
         setData(parsed);
         setLoading(false);
       })();
+      const t2 = performance.now();
+      console.log(t2 - t1);
     }
-  }, [limit]);
+  }, [limit, data.length]);
 
   useEffect(() => {
     if (data.length >= limit) setLoading(false);
@@ -45,7 +48,7 @@ export default function Home({ features }: any) {
   const override: CSSProperties = {
     position: "absolute",
     left: "50%",
-    zIndex: "2",
+    zIndex: "3",
     margin: "0 auto",
   };
 
@@ -59,11 +62,16 @@ export default function Home({ features }: any) {
       </Head>
       <main className={styles.main}>
         <div className={styles.container}>
-          <ScaleLoader
-            loading={loading}
-            cssOverride={override}
-            color="#27272B"
-          />
+          {loading && (
+            <div className={styles.loader}>
+              <ScaleLoader
+                loading={loading}
+                cssOverride={override}
+                color="#fff"
+              />
+            </div>
+          )}
+
           <Map features={data.slice(0, limit)} />
         </div>
         <div>
@@ -85,7 +93,7 @@ export default function Home({ features }: any) {
 export async function getStaticProps() {
   // Set DynamoDB instance to the Dynamoose DDB instance
   dynamoose.aws.ddb.set(dynamoInstance);
-  const results = await Coordinate.scan().limit(100).exec();
+  const results = await Coordinate.scan().limit(1).exec();
   const features = await JSON.stringify(results);
   const parsed = JSON.parse(features);
   console.log("Fetched data!");

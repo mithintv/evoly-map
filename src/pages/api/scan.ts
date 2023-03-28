@@ -18,15 +18,15 @@ export default async function handler(
   try {
     const t1 = performance.now();
     let results;
-    if (limitNumber === 10000) {
+    if (limitNumber > 1000) {
       results = await Coordinate.scan()
+        .attributes(["type", "geometry"])
         .all()
-        .attributes(["type", "geometry"])
         .exec();
-    } else if (limitNumber === 1000) {
+    } else if (limitNumber > 100) {
       results = await Coordinate.scan()
-        .attributes(["type", "geometry"])
         .limit(limitNumber)
+        .attributes(["type", "geometry"])
         .exec();
     } else results = await Coordinate.scan().limit(limitNumber).exec();
 
