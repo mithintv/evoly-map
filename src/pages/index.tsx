@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, CSSProperties } from "react";
+import { useEffect, useState, CSSProperties } from "react";
 import Head from "next/head";
 import Map from "../components/Map";
 import Button from "@/components/Button";
@@ -25,19 +25,15 @@ export default function Home({ features }: any) {
 
   useEffect(() => {
     if (limit > data.length) {
-      const t1 = performance.now();
-      console.log("fetching");
+      console.log("fetching more data");
       (async function () {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API}api/scan?limit=${limit}`
         );
         const parsed = await response.json();
-        console.log(parsed);
         setData(parsed);
         setLoading(false);
       })();
-      const t2 = performance.now();
-      console.log(t2 - t1);
     }
   }, [limit, data.length]);
 
@@ -93,10 +89,10 @@ export default function Home({ features }: any) {
 export async function getStaticProps() {
   // Set DynamoDB instance to the Dynamoose DDB instance
   dynamoose.aws.ddb.set(dynamoInstance);
-  const results = await Coordinate.scan().limit(10).exec();
+  const results = await Coordinate.scan().limit(1).exec();
   const features = await JSON.stringify(results);
   const parsed = JSON.parse(features);
-  console.log("Fetched data!");
+  console.log("fetched initial data!");
   return {
     props: { features: parsed }, // will be passed to the page component as props
   };
