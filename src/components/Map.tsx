@@ -6,7 +6,6 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
 const addMapLayers = (map: mapboxgl.Map, features: Feature[]) => {
-  console.log("adding new source");
   map.addSource("coordinates", {
     type: "geojson",
     // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
@@ -88,13 +87,12 @@ const addMapLayers = (map: mapboxgl.Map, features: Feature[]) => {
 
 export default function Map({ features }: { features: Feature[] }) {
   const mapContainer = useRef(null);
-  const [map, setMap] = useState<any>(null);
+  const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [lng, setLng] = useState(-17.48);
   const [lat, setLat] = useState(20.63);
   const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
-    console.log("running map initializer!");
     // Initializes map
     const map = new mapboxgl.Map({
       container: mapContainer.current!,
@@ -169,7 +167,6 @@ export default function Map({ features }: { features: Feature[] }) {
     if (!map) return;
     else {
       if (map.getSource("coordinates")) {
-        console.log("removing old map source");
         map.removeLayer("unclustered-point");
         map.removeLayer("cluster-count");
         map.removeLayer("clusters");

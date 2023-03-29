@@ -25,7 +25,6 @@ export default function Home({ features }: any) {
 
   useEffect(() => {
     if (limit > data.length) {
-      console.log("fetching more data");
       (async function () {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API}api/scan?limit=${limit}`
@@ -34,12 +33,10 @@ export default function Home({ features }: any) {
         setData(parsed);
         setLoading(false);
       })();
+    } else {
+      setLoading(false);
     }
   }, [limit, data.length]);
-
-  useEffect(() => {
-    if (data.length >= limit) setLoading(false);
-  }, [data.length, limit]);
 
   const override: CSSProperties = {
     position: "absolute",
@@ -63,7 +60,7 @@ export default function Home({ features }: any) {
               <ScaleLoader
                 loading={loading}
                 cssOverride={override}
-                color="#fff"
+                color="#000"
               />
             </div>
           )}
@@ -77,6 +74,7 @@ export default function Home({ features }: any) {
                 key={index}
                 onClick={setLengthHandler}
                 name={button}
+                disabled={parseInt(button.replaceAll(",", "")) === limit}
               ></Button>
             );
           })}
@@ -89,10 +87,9 @@ export default function Home({ features }: any) {
 export async function getStaticProps() {
   // Set DynamoDB instance to the Dynamoose DDB instance
   dynamoose.aws.ddb.set(dynamoInstance);
-  const results = await Coordinate.scan().limit(1).exec();
+  const results = await Coordinate.scan().limit(10).exec();
   const features = await JSON.stringify(results);
   const parsed = JSON.parse(features);
-  console.log("fetched initial data!");
   return {
     props: { features: parsed }, // will be passed to the page component as props
   };
