@@ -93,7 +93,7 @@ export default function Home({ features }: any) {
 export async function getStaticProps() {
   // Set DynamoDB instance to the Dynamoose DDB instance
   dynamoose.aws.ddb.set(dynamoInstance);
-  const results = await Coordinate.scan().limit(1).exec();
+  const results = await Coordinate.scan().limit(10).exec();
   const features = await JSON.stringify(results);
   const parsed = JSON.parse(features);
   console.log("Fetched data!");
