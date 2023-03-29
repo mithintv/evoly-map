@@ -117,12 +117,15 @@ export default function Map({ features }: { features: Feature[] }) {
         layers: ["clusters"],
       });
       const clusterId = features[0].properties!.cluster_id;
+
       map
         .getSource("earthquakes")
+        // @ts-ignore
         .getClusterExpansionZoom(clusterId, (err, zoom) => {
           if (err) return;
 
           map.easeTo({
+            // @ts-ignore
             center: features[0].geometry.coordinates,
             zoom: zoom,
           });
@@ -130,6 +133,7 @@ export default function Map({ features }: { features: Feature[] }) {
     });
 
     map.on("click", "unclustered-point", (e) => {
+      // @ts-ignore
       const coordinates = e.features![0].geometry.coordinates.slice();
 
       // Ensure that if the map is zoomed out such that
