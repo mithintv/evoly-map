@@ -3,6 +3,7 @@ import Head from "next/head";
 import Map from "../components/Map";
 import Button from "@/components/Button";
 import styles from "@/styles/Home.module.css";
+import axios from "axios";
 
 import * as dynamoose from "dynamoose";
 import { dynamoInstance, Coordinate } from "../lib/schema";
@@ -11,6 +12,10 @@ import ScaleLoader from "react-spinners/ScaleLoader";
 
 // import earthquakes from "../../seeds/earthquakes.json";
 // import random from "../seeds/random10000.json";
+
+const api = axios.create({
+  timeout: 20000, // set timeout to 20 seconds
+});
 
 export default function Home({ features }: any) {
   const [loading, setLoading] = useState(true);
@@ -26,10 +31,10 @@ export default function Home({ features }: any) {
   useEffect(() => {
     if (limit > data.length) {
       (async function () {
-        const response = await fetch(
+        const response = await api.get(
           `${process.env.NEXT_PUBLIC_API}api/scan?limit=${limit}`
         );
-        const parsed = await response.json();
+        const parsed = await response.data;
         setData(parsed);
         setLoading(false);
       })();
