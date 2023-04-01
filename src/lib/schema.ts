@@ -6,6 +6,11 @@ export const dynamoInstance = new dynamoose.aws.ddb.DynamoDB({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   region: process.env.AWS_REGION!,
+  maxRetries: 3, // maximum number of retries for failed requests
+  httpOptions: {
+    timeout: 20000, // timeout in milliseconds
+    connectTimeout: 20000, // connection timeout in milliseconds
+  },
 });
 
 export const schema = new dynamoose.Schema({
