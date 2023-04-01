@@ -1,0 +1,4 @@
+functions:
+  api:
+    handler: serverless/pages/api/scan.js
+    timeout: 30
