@@ -38,5 +38,8 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 <br>
 
-# Details
+# Technology
 This was built primarily with React and Typescript using Next.js. Mapbox was used as the mapping library and Dynamoose was used as the ORM to communicate with DynamoDB.
+
+# Performance
+The current implementation renders all 10,000 coordinates on a React frontend on the server during build-time. During my tests, this implementation had the fastest client-side load times. React and Mapbox GL do the heavy lifiting in regards to loading speed for the actual map itself once the coordinates are loaded. As long as the coordinates are loaded, moving through the map i.e zooming around and clicking on diferent clusters and coordinates don't seem to have a noticable effect in terms of the rendering the map. Next.js also provides incremental static regneration if the database were to have frequent updates. 
